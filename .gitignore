@@ -1,1 +1,6 @@
-./FileEncryption.env
+# Ignore virtual environment
+venv/
+.env
+*.pyc
+__pycache__/
+
