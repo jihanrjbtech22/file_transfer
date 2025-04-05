@@ -1,1 +1,0 @@
-Hello! this is an encrypted message being sent over from Client to Server using only RSA and FTP
