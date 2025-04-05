@@ -1,29 +1,18 @@
-from ftplib import FTP
+from pyftpdlib.servers import FTPServer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.authorizers import DummyAuthorizer
 
-def upload_file():
-    ftp = FTP()
-    ftp.connect("LINUX_IP_HERE", 2121)
-    ftp.login("user", "12345")
+def run_ftp_server():
+    authorizer = DummyAuthorizer()
+    # Create a user with full permissions
+    authorizer.add_user("user", "12345", ".", perm="elradfmwMT")  # '.' means current directory
 
-    filename = "test_upload.txt"
-    with open(filename, "rb") as f:
-        ftp.storbinary(f"STOR {filename}", f)
-    print(f"Uploaded {filename} successfully.")
+    handler = FTPHandler
+    handler.authorizer = authorizer
 
-    ftp.quit()
+    server = FTPServer(("0.0.0.0", 2121), handler)
+    print("Starting FTP server on port 2121...")
+    server.serve_forever()
 
-def download_file():
-    ftp = FTP()
-    ftp.connect("LINUX_IP_HERE", 2121)
-    ftp.login("user", "12345")
-
-    filename = "test_download.txt"
-    with open(filename, "wb") as f:
-        ftp.retrbinary(f"RETR {filename}", f.write)
-    print(f"Downloaded {filename} successfully.")
-
-    ftp.quit()
-
-# Choose to upload or download
-upload_file()
-# download_file()
+if __name__ == "__main__":
+    run_ftp_server()
