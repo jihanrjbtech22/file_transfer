@@ -29,11 +29,19 @@ def upload_file(filename):
 
 def download_file(filename):
     try:
-        with open(filename, "wb") as f:
+        # Create 'downloads' folder if it doesn't exist
+        downloads_dir = os.path.join(os.getcwd(), "downloads")
+        os.makedirs(downloads_dir, exist_ok=True)
+
+        local_path = os.path.join(downloads_dir, os.path.basename(filename))
+
+        with open(local_path, "wb") as f:
             ftp.retrbinary(f"RETR {filename}", f.write)
-        print(f"📥 Downloaded: {filename}")
+
+        print(f"📥 Downloaded: {filename} ➜ downloads/{os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Error: {e}")
+
 
 def delete_file(filename):
     try:
