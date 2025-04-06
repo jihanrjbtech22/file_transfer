@@ -454,39 +454,77 @@ class FTPClientGUI:
                 self.remote_tree.delete(*self.remote_tree.get_children())
                 
     def browse_local(self):
-        """Open directory dialog to change the current local directory"""
+        """Open system file browser to select files"""
         try:
-            path = filedialog.askdirectory(
-                title="Select Directory",
+            # This will open the native file browser in file selection mode
+            filepaths = filedialog.askopenfilenames(
+                title="Select Files",
                 initialdir=self.local_path_var.get()
             )
-            if path:
-                self.local_path_var.set(path)
-                self.update_local_file_list()
-        except Exception as e:
-            self.log_message(f"❌ Error browsing directory: {e}")
             
+            if filepaths:
+                # Update to the directory containing the first selected file
+                first_file_dir = os.path.dirname(filepaths[0])
+                self.local_path_var.set(first_file_dir)
+                self.update_local_file_list()
+                
+                # Highlight the selected files in the treeview
+                for filepath in filepaths:
+                    filename = os.path.basename(filepath)
+                    for child in self.local_tree.get_children():
+                        if self.local_tree.item(child)['values'][0] == filename:
+                            self.local_tree.selection_set(child)
+                            break
+                
+        except Exception as e:
+            self.log_message(f"❌ Error browsing files: {e}")
+
     def upload_file(self):
-        """Handle file upload with direct file selection dialog"""
+        """Upload currently selected files"""
         if not self.ftp:
             messagebox.showerror("Error", "Not connected to a server")
             return
             
-        # Open file selection dialog
-        filepath = filedialog.askopenfilename(
-            title="Select File to Upload",
-            initialdir=self.local_path_var.get()
-        )
-        
-        if not filepath:  # User cancelled
+        selected = self.local_tree.selection()
+        if not selected:
+            messagebox.showinfo("Info", "Please select files to upload (use Browse button)")
             return
             
-        filename = os.path.basename(filepath)
+        for item_id in selected:
+            item = self.local_tree.item(item_id)
+            filename = item['values'][0]
+            
+            if filename == "..":
+                continue
+                
+            local_path = os.path.join(self.local_path_var.get(), filename)
+            if os.path.isdir(local_path):
+                continue
+                
+            def do_upload(filepath):
+                try:
+                    encrypted_path = f"{filepath}.enc"
+                    self.encrypt_file(filepath, encrypted_path)
+                    
+                    remote_filename = os.path.basename(encrypted_path)
+                    with open(encrypted_path, "rb") as f:
+                        self.ftp.storbinary(f"STOR {remote_filename}", f)
+                        
+                    os.remove(encrypted_path)
+                    self.log_message(f"✅ Uploaded: {os.path.basename(filepath)}")
+                    
+                except Exception as e:
+                    self.log_message(f"❌ Failed to upload {os.path.basename(filepath)}: {e}")
+            
+            # Start upload in a new thread
+            threading.Thread(target=do_upload, args=(local_path,), daemon=True).start()
         
+        self.refresh_remote()
+            
         def upload_thread():
             try:
-                encrypted_path = f"{filepath}.enc"
-                self.encrypt_file(filepath, encrypted_path)
+                encrypted_path = f"{local_path}.enc"
+                self.encrypt_file(local_path, encrypted_path)
                 
                 remote_filename = os.path.basename(encrypted_path)
                 with open(encrypted_path, "rb") as f:
