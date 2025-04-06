@@ -2,6 +2,7 @@ from ftplib import FTP
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import os
+import re
 
 # === FTP Credentials ===
 FTP_HOST = "192.168.66.3"
@@ -30,6 +31,23 @@ with open("public.pem", "wb") as f:
 print("🔐 RSA key pair generated.")
 print("Type 'help' to see available commands.")
 
+
+def get_pasv_data_port():
+    # Enter passive mode and capture the server response
+    response = ftp.sendcmd("PASV")
+    print(f"📡 PASV response: {response}")
+
+    # Extract the 6 numbers from the response
+    match = re.search(r"\((\d+,\d+,\d+,\d+,\d+,\d+)\)", response)
+    if not match:
+        raise Exception("⚠️ Could not parse PASV response")
+
+    numbers = list(map(int, match.group(1).split(",")))
+    p1, p2 = numbers[-2], numbers[-1]
+    port = p1 * 256 + p2
+
+    print(f"📦 Data Connection Port: {port}")
+    return port
 
 # === Command Handlers ===
 def list_files():
