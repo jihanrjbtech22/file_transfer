@@ -68,7 +68,8 @@ class FTPClientGUI:
         tk.Label(
             connection_frame, 
             text="Server IP:", 
-            bg=BG_COLOR
+            bg=BG_COLOR,
+            fg = "black",
         ).grid(row=0, column=0, sticky="w")
         
         self.server_var = tk.StringVar()
@@ -86,6 +87,7 @@ class FTPClientGUI:
             bg=BUTTON_COLOR,
             activebackground=ACTIVE_COLOR,
             relief=tk.GROOVE
+
         )
         scan_btn.grid(row=0, column=2, padx=5)
         
@@ -122,7 +124,8 @@ class FTPClientGUI:
             text="Local Files", 
             bg=BG_COLOR, 
             padx=5, 
-            pady=5
+            pady=5,
+            fg="black"  # Added this line
         )
         local_frame.grid(row=0, column=0, sticky="nsew", padx=5)
         local_frame.grid_rowconfigure(1, weight=1)
@@ -206,7 +209,8 @@ class FTPClientGUI:
             text="Remote Files", 
             bg=BG_COLOR, 
             padx=5, 
-            pady=5
+            pady=5,
+            fg="black"  # Added this line
         )
         remote_frame.grid(row=0, column=1, sticky="nsew", padx=5)
         remote_frame.grid_rowconfigure(1, weight=1)
@@ -312,7 +316,8 @@ class FTPClientGUI:
             text="Activity Log", 
             bg=BG_COLOR, 
             padx=5, 
-            pady=5
+            pady=5,
+            fg="black"  # Added this line
         )
         log_frame.grid(row=3, column=0, sticky="ew", padx=10, pady=(0, 10))
         
