@@ -2,7 +2,7 @@ from ftplib import FTP
 import os
 
 # === FTP Credentials ===
-FTP_HOST = "192.168.65.6"
+FTP_HOST = "192.168.66.3"
 FTP_PORT = 2121
 FTP_USER = "user"
 FTP_PASS = "12345"
@@ -11,6 +11,7 @@ FTP_PASS = "12345"
 ftp = FTP()
 ftp.connect(FTP_HOST, FTP_PORT)
 ftp.login(FTP_USER, FTP_PASS)
+
 
 print("🌐 Connected to FTP Server.")
 print("Type 'help' to see available commands.")
@@ -25,6 +26,7 @@ def upload_file(filename):
         return
     with open(filename, "rb") as f:
         ftp.storbinary(f"STOR {os.path.basename(filename)}", f)
+    ftp.set_debuglevel(2) # Printing the PASV to sniff the packet 
     print(f"✅ Uploaded: {filename}")
 
 def download_file(filename):
@@ -37,7 +39,7 @@ def download_file(filename):
 
         with open(local_path, "wb") as f:
             ftp.retrbinary(f"RETR {filename}", f.write)
-
+        ftp.set_debuglevel(2) # Printing the PASV to sniff the packet 
         print(f"📥 Downloaded: {filename} ➜ downloads/{os.path.basename(filename)}")
     except Exception as e:
         print(f"❌ Error: {e}")
